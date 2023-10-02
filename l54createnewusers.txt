@@ -1,0 +1,115 @@
+=>PHP Myadmin
+
+hsuphyo
+password12345
+
+localhost/phpmyadmin > click "User accounts"
+CLick "Add user account"
+
+Username : User text field : hsuphyo
+Host     : Local        : localhost
+Password : User text field : password12345
+Re -type                   : password12345
+Authentication plugin       : Caching sha2 authentication
+
+Data = Check all
+structure = Check all
+Administrator = Check all 
+Resources limit = 0 0 0 0
+SSl = Require  once
+
+Click "Go"
+
+-----------------------------------------------
+
+=>Terminal
+
+Linux 
+ctrl++alt+t 
+
+windows 
+windows+r 
+cmd
+
+
+=>Linux 
+
+mysql -u root -p 
+or 
+mysql -u root -p -h 127.0.0.1
+
+password12345
+
+=mysql logout 
+exit 
+or 
+\q
+
+
+=>MYSQL command line with XAMPP for Windows
+cd\
+cd xampp 
+cd mysql 
+cd bin 
+mysql -u root -p 
+or 
+mysql -u root -p -h 127.0.0.1
+
+(mysql.exe ထဲကိုဝင်တာ)
+
+=>MYSQL command line with WAMP for Windows
+cd\
+cd wamp 
+cd bin 
+cd mysql 
+mysql -u root -p 
+or 
+mysql -u root -p -h 127.0.0.1
+
+
+=Current User 
+SELECT USER();
+SELECT CURRENT_USER();
+
+=List all users 
+SELECT USER FROM mysql.user;
+SELECT USER,HOST FROM mysql.user;
+
+
+=>CREATE User accounts
+
+CREATE USER 'kohtut'@'localhost' IDENTIFIED BY 'password12345'
+or 
+CREATE USER 'kotha'@'localhost' IDENTIFIED WITH MYSQL_NATIVE_PASSWORD BY 'password12345'
+
+
+SELECT USER FROM mysql.user;
+SELECT USER();
+
+
+=>Change User's Password 
+ALTER USER 'kohtut'@'localhost' IDENTIFIED WITH MYSQL_NATIVE_PASSWORD BY 'p@ssword12345'
+
+
+=>Granting a User Permission (Note : *.* means database.table [All file all format])
+GRANT ALL PRIVILEGES ON *.* TO 'kohtut'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+or
+GRANT CREATE,ALTER,DROP,INSERT,UPDATE,DELETE,SELECT,REFERENCES ON *.* TO 'kotha'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+(FLUSH PRIVILEGES ဆိုက SERVER ကို refresh လုပ်ပေးတာပဲ)
+
+
+=>Review a user's current permission 
+SHOW GRANTS FOR 'kohtut'@'localhost';
+
+=>Drop User 
+DROP USER 'kotha'@'localhost';
+
+SELECT USER FROM mysql.user;
+SELECT USER();
+
+----------------------------------------------------------
+
+19SFN

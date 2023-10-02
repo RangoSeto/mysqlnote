@@ -1,0 +1,480 @@
+=>Database Trigger
+
+=>trigger_time
+BEFORE
+AFTER
+
+=>trigger_event
+INSERT 
+UPDATE
+DELETE
+
+
+=syntax
+
+
+DELIMITER $$
+
+CREATE TRIGGER triggername
+trigger_time trigger_event ON tablename FOR EACH ROW
+BEGIN
+	-- statements;
+END$$
+
+DELIMITER ;
+
+*can't use
+DELIMITER;
+*use with space
+DELIMITER ;
+
+
+
+=>Statement (IF-THEN-ELSE Statement)
+
+IF condition1 THEN
+	code to be execute
+ELSEIF condition2 THEN
+	code to be execute
+ELSEIF condition3 THEN
+	code to be execute
+ELSE
+	code to be execute
+END IF;
+
+-----------------------------
+
+CREATE TABLE IF NOT EXISTS borrowers(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	username VARCHAR(50),
+	password VARCHAR(255),
+	age INT,
+	status INT DEFAULT 1
+);
+
+DESC borrowers;
+
+// SHA,MD5 ၂ခုလုံး encryped လုပ်ပေးတဲ့ဟာတွေ MD5 ကပိုပြီးမြင့်တယ် 
+INSERT INTO borrowers(username,password,age)
+VALUES ('aungaung',MD5(SHA('123456')),20),
+('zawzaw',SHA(MD5('123456')),30);
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('maungmaung',MD5(SHA('123456')),17),
+('hlahla',SHA(MD5('123456')),60);
+
+SELECT * FROM borrowers;
+
+
+-----------------------------------------------------------
+
+=>BEFORE INSERT 
+
+
+DELIMITER //
+
+CREATE TRIGGER borrowerstatus_bfc
+BEFORE INSERT
+ON borrowers FOR EACH ROW
+BEGIN
+	
+	IF NEW.age < 18 THEN SET NEW.status = 2;
+	END IF;
+
+END;//
+
+DELIMITER ;
+
+SHOW TRIGGERS;
+
+
+DROP TRIGGER IF EXISTS borrowerstatus_bfc;
+
+SHOW TRIGGERS;
+
+
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('zawzaw',MD5(SHA('123456')),28);
+
+SELECT * FROM borrowers;
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('hlahla',MD5(SHA('123456')),14); // 2တန်းဝင်သွားမယ်
+
+SELECT * FROM borrowers;
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('umya',MD5(SHA('123456')),65);
+
+SELECT * FROM borrowers;
+
+DROP TRIGGER IF EXISTS borrowerstatus_bfc;
+SHOW TRIGGERS;
+
+---------------------------------------------
+
+
+DELIMITER //
+
+CREATE TRIGGER borrowerstatus_bfc
+BEFORE INSERT
+ON borrowers FOR EACH ROW
+BEGIN
+	
+	IF NEW.age < 18 THEN SET NEW.status = 2;
+	ELSEIF NEW.age > 45 THEN SET NEW.status = 3;
+	END IF;
+
+END; //
+
+DELIMITER ;
+
+SHOW TRIGGERS;
+
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('myamya',MD5(SHA('123456')),28);
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('ayeaye',MD5(SHA('123456')),14); 
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('uba',MD5(SHA('123456')),70);
+
+SELECT * FROM borrowers;
+
+DROP TRIGGER IF EXISTS borrowerstatus_bfc;
+SHOW TRIGGERS;
+
+-----------------------------------------------
+
+=>MySQL ERROR MESSAGE
+
+
+DELIMITER //
+
+CREATE TRIGGER borrowerstatus_bfc
+BEFORE INSERT
+ON borrowers FOR EACH ROW
+BEGIN
+	
+	IF NEW.age < 18 THEN
+	SIGNAL SQLSTATE '45000'
+	SET MESSAGE_TEXT = "Ohh...we cann't provide loan for this user";
+	END IF;
+
+END; //
+
+DELIMITER ;
+
+
+
+SHOW TRIGGERS;
+
+
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('targi',MD5(SHA('123456')),25);
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('utookpe',MD5(SHA('123456')),55); 
+
+INSERT INTO borrowers(username,password,age)
+VALUES ('thura',MD5(SHA('123456')),13);
+
+SELECT * FROM borrowers;
+
+DROP TRIGGER IF EXISTS borrowerstatus_bfc;
+SHOW TRIGGERS;
+
+
+------------------------------------------------
+
+=>AFTER INSERT
+
+CREATE TABLE IF NOT EXISTS borrowercreators(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	borrower_id INT,
+	created_at TIMESTAMP DEFAULT NOW(),
+	created_by VARCHAR(50)
+);
+
+DESC borrowercreators;
+
+
+DELIMITER // 
+CREATE TRIGGER borrowercreator_afc
+AFTER INSERT
+ON borrowers FOR EACH ROW
+BEGIN
+
+	DECLARE dbuser VARCHAR(50); //variable ကြေညာတာ
+	SELECT USER() INTO dbuser;
+
+	INSERT INTO borrowercreators(borrower_id,created_by)
+	VALUE(NEW.id,dbuser);
+
+END; //
+DELIMITER ;
+
+DROP TRIGGER borrowercreator_afc;
+
+SELECT * FROM borrowers;
+SELECT * FROM borrowercreators;
+
+INSERT INTO borrowers(username,password,age)
+VALUES('yu yu',MD5(SHA('12345')),23);
+
+SELECT * FROM borrowers;
+SELECT * FROM borrowercreators;
+
+INSERT INTO borrowers(username,password,age)
+VALUES('thuzar',MD5(SHA('12345')),24),
+('zinmar',MD5(SHA('12345')),24),
+('myoaung',MD5(SHA('12345')),60);
+
+SELECT * FROM borrowers;
+SELECT * FROM borrowercreators;
+
+
+SHOW TRIGGERS;
+DROP TRIGGER IF EXISTS borrowerstatus;
+DROP TRIGGER IF EXISTS borrowercreator_afc;
+
+------
+
+SELECT USER(); //root@localhost လို့ထွက်မှာ
+
+----------------------------------------------------
+
+DESC borrowers;
+
+CREATE TABLE IF NOT EXISTS reminders(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	borrower_id INT,
+	message VARCHAR(255) NOT NULL
+);
+
+DESC reminders;
+
+
+DELIMITER //
+CREATE TRIGGER borroweragereminder_afc
+AFTER INSERT
+ON borrowers FOR EACH ROW
+BEGIN
+
+	IF NEW.age IS NULL THEN 
+		INSERT INTO reminders(borrower_id,message)
+		VALUE(NEW.id,CONCAT('Dear ',NEW.username,' ,please update your age.'));
+	END IF;
+
+END; //
+DELIMITER ;
+
+SELECT * FROM borrowers;
+SELECT * FROM borrowercreators;
+SELECT * FROM reminders;
+
+
+INSERT INTO borrowers(username,password)
+VALUE('thura',MD5(SHA('12345')));
+
+INSERT INTO borrowers(username,password,age)
+VALUE('myomyo',MD5(SHA('12345')),14);
+
+INSERT INTO borrowers(username,password)
+VALUE('hlahla',MD5(SHA('12345')));
+
+
+SELECT * FROM borrowers;
+SELECT * FROM borrowercreators;
+SELECT * FROM reminders;
+
+----------------------------------------------
+
+=>BEFORE UPDATE
+
+DELIMITER ||
+CREATE TRIGGER borrowerage_bfu
+BEFORE UPDATE
+ON borrowers FOR EACH ROW
+BEGIN
+
+	DECLARE errmessage VARCHAR(255);
+	SET errmessage = CONCAT('The old age is ',OLD.age,'. Sorry,we cannnot provide to change');
+
+	IF OLD.age IS NOT NULL THEN
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = errmessage;
+	ELSE
+		IF NEW.age < 18 THEN
+			SET NEW.status = 2;
+		ELSEIF NEW.age > 45 THEN
+			SET NEW.status = 3;
+		END IF;
+	END IF;
+
+END; ||
+DELIMITER ;
+
+
+SELECT * FROM borrowers;
+SELECT * FROM reminders;
+
+*error(ရေးထားတဲ့error)
+UPDATE borrowers SET age = 20 WHERE id = 9;
+
+SELECT * FROM borrowers;
+SELECT * FROM reminders;
+
+
+UPDATE borrowers SET age = 15 WHERE id = 23;
+UPDATE borrowers SET age = 30 WHERE id = 25;
+
+SELECT * FROM borrowers;
+SELECT * FROM reminders;
+
+--------------------------------------------------
+
+=>AFTER UPDATE
+
+(DELIMITER က terminal မှာဆို၁ကြောင်းဆင်းလိုက်တိုင်းလုပ်သွားတာမလို့ delimiter ; ပိတ်မှဒီလုပ်ကပြီးတယ်ဆိုပြီးသိအောင်ပြောတာ)
+
+DELIMITER ||
+
+CREATE TRIGGER borrowerreminder_afu
+AFTER UPDATE
+ON borrowers FOR EACH ROW
+BEGIN
+	DELETE FROM reminders WHERE borrower_id = NEW.id;
+END; ||
+
+DELIMITER ;
+
+
+
+SELECT * FROM borrowers;
+SELECT * FROM reminders;
+
+SHOW TRIGGER;
+
+INSERT INTO borrowers(username,password)
+VALUE('thu thu',MD5(SHA('12345')));
+
+INSERT INTO borrowers(username,password,age)
+VALUE('thaw thaw',MD5(SHA('12345')),14);
+
+INSERT INTO borrowers(username,password)
+VALUE('than than',MD5(SHA('12345')));
+
+
+SELECT * FROM borrowers;
+SELECT * FROM reminders;
+
+
+*error with message
+UPDATE borrowers SET age=18 WHERE id = 22;
+
+
+UPDATE borrowers SET age=12 WHERE id = 21;
+SELECT * FROM borrowers;
+SELECT * FROM reminders;
+
+UPDATE borrowers SET age=75 WHERE id = 23;
+SELECT * FROM borrowers;
+SELECT * FROM reminders;
+
+
+------------------------------------------------
+
+=>BEFORE DELETE
+
+CREATE TABLE IF NOT EXISTS activities(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	borrower_id INT,
+	created_at TIMESTAMP DEFAULT NOW(),
+	created_by VARCHAR(50)
+);
+
+DESC activities;
+
+
+DELIMITER $$
+CREATE TRIGGER borroweracti_bfd
+BEFORE DELETE
+ON borrowers FOR EACH ROW
+BEGIN
+	
+	DECLARE dbuser VARCHAR(50);
+	SELECT USER() INTO dbuser;
+
+	INSERT INTO activities(borrower_id,created_by)
+	VALUE (OLD.id,dbuser);
+
+END; $$
+DELIMITER ;
+
+
+SELECT * FROM borrowers;
+SELECT * FROM activities;
+SELECT * FROM borrowercreators;
+
+
+DELETE FROM borrowers WHERE id = 23;
+
+SELECT * FROM borrowers;
+SELECT * FROM activities;
+
+
+DELETE FROM borrowers WHERE id = 22;
+
+SELECT * FROM borrowers;
+SELECT * FROM activities;
+
+(ဖျက်ပြီးသားထပ်ဖျက်ရင်တော့ activities ထဲမဝင်)
+
+
+------------------------------------------------
+
+=>AFTER DELETE
+
+DELIMITER $$
+CREATE TRIGGER borroweracti_afd
+AFTER DELETE
+ON borrowers FOR EACH ROW
+BEGIN
+	
+	DELETE FROM borrowercreators WHERE borrower_id = OLD.id;
+
+END; $$
+DELIMITER ;
+
+
+SELECT * FROM borrowers;
+SELECT * FROM activities;
+SELECT * FROM borrowercreators;
+
+
+
+DELETE FROM borrowers WHERE id = 21;
+
+SELECT * FROM borrowers;
+SELECT * FROM activities;
+SELECT * FROM borrowercreators;
+
+
+
+DELETE FROM borrowers WHERE id = 14;
+DELETE FROM borrowers WHERE id = 15;
+DELETE FROM borrowers WHERE id = 16;
+DELETE FROM borrowers WHERE id = 17;
+DELETE FROM borrowers WHERE id = 20;
+
+SELECT * FROM borrowers;
+SELECT * FROM activities;
+SELECT * FROM borrowercreators;
+
+------------------------------------------------
+

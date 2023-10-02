@@ -1,0 +1,6 @@
+for myanmar / english font => utf8_unicode_ci (or) utf8_general_ci
+use utf8_unicode_ci
+
+
+must be number(only) => INT
+text and number => VARCHAR

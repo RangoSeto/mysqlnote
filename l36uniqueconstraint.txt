@@ -1,0 +1,269 @@
+=> UNIQUE Constraint
+
+=Constraints
+PRIMARY KEY
+FOREIGN KEY
+NOT NULL
+UNIQUE
+DEFAULT
+CHECK
+
+
+=Syntax (Single Column)
+
+CREATE TABLE tablename(
+	column1 datatype,
+	column1 datatype UNIQUE,
+	column1 datatype,
+	....
+);
+
+
+=Syntax (Multi Column)
+
+CREATE TABLE tablename(
+	column1 datatype,
+	column2 datatype,
+	column3 datatype,
+	....,
+	UNIQUE(column1,column2)
+);
+
+
+---------------------------------------------
+
+=EXERCISE (Single)
+
+CREATE TABLE IF NOT EXISTS countries(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50) NOT NULL UNIQUE,
+	capital VARCHAR(50) NOT NULL,
+	currencyname VARCHAR(30),
+	isocode VARCHAR(10)
+);
+
+
+DESC countries;
+SHOW INDEX FROM countries;
+
+=>DROP UNIQUE Key
+ALTER TABLE countries DROP INDEX name;
+
+DESC countries;
+SHOW INDEX FROM countries;
+
+DROP TABLE IF EXISTS countries;
+
+
+CREATE TABLE IF NOT EXISTS countries(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50) NOT NULL,
+	capital VARCHAR(50) NOT NULL,
+	currencyname VARCHAR(30),
+	isocode VARCHAR(10),
+	UNIQUE(name)
+);
+
+DESC countries;
+SHOW INDEX FROM countries;
+SHOW INDEX IN countries; (same to INDEX FROM)
+
+
+INSERT INTO countries(name,capital,currencyname,isocode)
+VALUES ('myanmar','naypyidaw','myanmar kyat','mmk'),
+('thailand','bangkok','thai baht','thb'),
+('indonnesia','jakata','indonesia rupiee','idr'),
+('srilanka','colombo','srilanka rupee','lkr');
+
+SELECT * FROM countries;
+
+
+*error
+INSERT INTO countries(name,capital,currencyname,isocode)
+VALUES ('myanmar','yangon','burmese kyat','mmk');
+
+*error
+INSERT INTO countries(name,capital,currencyname,isocode)
+VALUES ('Myanmar','yangon','burmese kyat','mmk');
+
+SELECT * FROM countries;
+
+*error
+UPDATE countries SET name="Thailand" WHERE id=4;
+
+
+------------------------------------------------------
+
+=EXERCISE ( Multi )
+
+CREATE TABLE IF NOT EXISTS cashiers(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50) NOT NULL,
+	email VARCHAR(50) NOT NULL UNIQUE,
+	password VARCHAR(100) NOT NULL,
+	phone VARCHAR(15) UNIQUE
+);
+
+DESC cashier;
+SHOW INDEX FROM cashiers;
+
+=>DROP UNIQUE Key
+ALTER TABLE cashiers DROP INDEX email;
+ALTER TABLE cashiers DROP INDEX phone;
+
+DESC cashier;
+SHOW INDEX FROM cashiers;
+
+DROP TABLE IF EXISTS cashiers;
+
+
+INSERT INTO cashiers(name,email,password,phone)
+VALUES('su su','susu@gmail.com',12345,'0911111'),
+('yu yu','yuyu@gmail.com',12345,'0922222'),
+('hla hla','hlahla@gmail.com',12345,'0933333'),
+('tun tun','tuntun@gmail.com',12345,'0944444');
+
+SELECT * FROM cashiers;
+
+
+*error = susu@gmail.com is already in record
+INSERT INTO cashiers(name,email,password,phone)
+VALUE ('ma ma','susu@gmail.com',12345,'0955555');
+
+*error = 0944444 is already in record
+INSERT INTO cashiers(name,email,password,phone)
+VALUE ('ma ma','mama@gmail.com',12345,'0944444');
+
+
+*error = yuyu@gmail.com/0933333 is already in record
+INSERT INTO cashiers(name,email,password,phone)
+VALUE ('ma ma','yuyu@gmail.com',12345,'0933333');
+
+ALTER TABLE cashiers DROP INDEX phone;
+SHOW INDEX FROM cashiers;
+
+*can
+INSERT INTO cashiers(name,email,password,phone)
+VALUE ('ma ma','mama@gmail.com',12345,'0933333');
+(id မှာကရှေ့ကလုပ်ခဲ့တဲ့ဟာတွေက data မ၀◌င်လိုက်ပေမယ် id နေရာယူသွားမယ်)
+
+SELECT * FROM cashiers;
+
+
+-------------------------------------------------------------------------
+
+=>UNIQUE with CONSTRAINT
+
+CREATE TABLE IF NOT EXISTS accountants(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50) NOT NULL,
+	email VARCHAR(50) NOT NULL,
+	password VARCHAR(100) NOT NULL,
+	phone VARCHAR(15),
+	UNIQUE(email,phone)
+);
+
+DESC accountants;
+SHOW INDEX FROM accountants;
+
+=>DROP UNIQUE KEY
+
+*error ( Can't DROP INDEX `phone`; check that it exists) [UNIQUE(email,phone) ဒီ၂ခုပေါင်းပေးထားတာရဲ့ keyname က email ဖြစ်နေလို့,ဖျက်ချင် email နဲ့ပဲဖျက် ၂ခုလုံးပျက်]
+ALTER TABLE accountants DROP INDEX phone;
+
+*can
+ALTER TABLE accountants DROP INDEX email;
+
+
+DROP TABLE IF EXISTS accountants;
+
+
+INSERT INTO accountants(name,email,password,phone)
+VALUES('su su','susu@gmail.com',12345,'0911111'),
+('yu yu','yuyu@gmail.com',12345,'0922222'),
+('hla hla','hlahla@gmail.com',12345,'0933333'),
+('tun tun','tuntun@gmail.com',12345,'0944444');
+
+SELECT * FROM accountants;
+
+*can
+INSERT INTO accountants(name,email,password,phone)
+VALUE ('ma ma','susu@gmail.com',12345,'0955555');
+
+*can = 0944444
+INSERT INTO accountants(name,email,password,phone)
+VALUE ('ma ma','mama@gmail.com',12345,'0944444');
+
+*can
+INSERT INTO accountants(name,email,password,phone)
+VALUE ('ma ma','yuyu@gmail.com',12345,'0933333');
+
+*error = tuntun@gmail.com/0944444 already exist in record
+INSERT INTO accountants(name,email,password,phone)
+VALUE ('ma ma','tuntun@gmail.com',12345,'0944444');
+
+*error = mama@gmail.com/0944444 already exist in record
+INSERT INTO accountants(name,email,password,phone)
+VALUE ('ma ma','mama@gmail.com',12345,'0944444');
+
+SELECT * FROM accountants;
+
+
+
+
+
+CREATE TABLE IF NOT EXISTS financeofficers(
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50) NOT NULL UNIQUE,
+	email VARCHAR(50) NOT NULL,
+	password VARCHAR(100) NOT NULL,
+	phone VARCHAR(15),
+	CONSTRAINT uc_email_phone UNIQUE(email,phone)
+);
+
+DESC financeofficers;
+SHOW INDEX FROM financeofficers;
+
+=>DROP UNIQUE KEY
+
+*error ( Can't DROP INDEX `phone`; check that it exists)
+ALTER TABLE financeofficers DROP INDEX phone;
+
+*can (ပေးထားတဲ့ keyname နဲ့ပဲဖျက်ရမယ်)
+ALTER TABLE financeofficers DROP INDEX uc_email_phone;
+
+
+DROP TABLE IF EXISTS financeofficers;
+
+
+INSERT INTO financeofficers(name,email,password,phone)
+VALUES('su su','susu@gmail.com',12345,'0911111'),
+('yu yu','yuyu@gmail.com',12345,'0922222'),
+('hla hla','hlahla@gmail.com',12345,'0933333'),
+('tun tun','tuntun@gmail.com',12345,'0944444');
+
+SELECT * FROM financeofficers;
+
+*can
+INSERT INTO financeofficers(name,email,password,phone)
+VALUE ('ma ma','susu@gmail.com',12345,'0955555');
+
+*can = 0944444
+INSERT INTO financeofficers(name,email,password,phone)
+VALUE ('nyi ma lay','mama@gmail.com',12345,'0944444');
+
+*can
+INSERT INTO financeofficers(name,email,password,phone)
+VALUE ('friend','yuyu@gmail.com',12345,'0933333');
+
+*error = tuntun@gmail.com/0944444 already exist in record
+INSERT INTO financeofficers(name,email,password,phone)
+VALUE ('ko gyi','tuntun@gmail.com',12345,'0944444');
+
+*error = yuyu@gmail.com/0933333 already exist in record
+INSERT INTO financeofficers(name,email,password,phone)
+VALUE ('maung lay','yuyu@gmail.com',12345,'0933333');
+
+SELECT * FROM financeofficers;
+
+

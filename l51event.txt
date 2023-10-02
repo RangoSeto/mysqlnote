@@ -1,0 +1,179 @@
+=>Event (tableထဲကလုပ်ဆောင်ချက်တွေကိုဘယ်အချိန်မှာဘာပြောင်းသွားစေချင်လဲသုံး)
+
+Event Type (Schedule)
+(i) One Time Event (1ခါပဲအလုပ်လုပ်မှာ)
+(ii) Recrring Event (ဒီeventကိုဆက်ပြီးလုပ်ဆောင်သွားမှာ ဒီချိန်တိုင်းမှာဒါလုပ်ပြောထားလို့ triggerနဲ့ဆင်တူ ဒါကအချိန်နဲ့အလုပ်လုပ်) (eg. licened key)
+
+eventသုံး serverမှာသွားဖွင့်ပေးဖို့လိုသေးတယ်
+=>To See event was ON/OFF
+SHOW PROCESSLIST;
+
+SET GLOBAL event_scheduler = ON;
+SET GLOBAL event_scheduler = OFF;
+
+
+=Syntax 
+(i) One Time Event
+
+Method 1 (eventကအလုပ်လုပ်ပြီးရင်ပျက်သွားမယ်)
+
+CREATE EVENT IF NOT EXISTS eventname
+ON SCHEDULE AT timestamp
+DO 
+---statements---
+
+
+Method 2 (သူကမပျက်သွား historyကျန်နေခဲ့မယ် ACTIONတော့မယူတော့ဘူး)
+
+CREATE EVENT IF NOT EXISTS eventname
+ON SCHEDULE AT timestamp
+ON COMPLETION PRESERVE
+DO 
+---statements---
+
+
+(ii) Recrring Event 
+
+Method 1
+
+CREATE EVENT IF NOT EXISTS eventname
+ON SCHEDULE EVERY INTERVAL
+STARTS timestamp
+DO 
+---statements---
+
+
+Method 2
+
+CREATE EVENT IF NOT EXISTS eventname
+ON SCHEDULE EVERY INTERVAL
+STARTS timestamp
+ENDS timestamp
+DO 
+---statements---
+
+---------------------------------------------------------
+
+(i) One Time Event
+
+CREATE TABLE IF NOT EXISTS vipcustomers(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    emailverify INT
+);
+
+DESC vipcustomers;
+
+INSERT INTO vipcustomers(name,email,emailverify)
+VALUES ('aung aung','aungaung@gmail.com',1),
+('zaw zaw','zawzaw@gmail.com',1),
+('may may','maymay@gmail.com',1),
+('su su','susu@gmail.com',1),
+('yamin','yamin@gmail.com',1);
+
+
+INSERT INTO vipcustomers(name,email)
+VALUES ('hla hla','hlahla@gmail.com'),
+('thaw thaw','thawthaw@gmail.com');
+
+SELECT * FROM vipcustomers;
+
+
+CREATE EVENT vipcustomers_ev
+ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 30 SECOND
+DO
+DELETE FROM vipcustomers WHERE emailverify IS NULL;
+
+=>List all Events 
+SHOW EVENTS;
+
+SELECT * FROM vipcustomers;
+SHOW EVENTS;
+
+
+
+INSERT INTO vipcustomers(name,email)
+VALUES ('hla hla','hlahla@gmail.com'),
+('thaw thaw','thawthaw@gmail.com');
+
+SELECT * FROM vipcustomers;
+
+CREATE EVENT vipcustomers_ev 
+ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 30 SECOND
+ON COMPLETION PRESERVE
+DO 
+DELETE FROM vipcustomers WHERE emailverify IS NULL;
+
+SELECT * FROM vipcustomers;
+SHOW EVENTS;
+
+
+=>Drop Event 
+DROP EVENT IF EXISTS vipcustomers_ev;
+
+
+(serverပေါ်မှာ timingနဲ့သုံးချင်ရင် chrome jockနဲ့သူံး)
+
+-----------------------------------------------
+
+=>(ii) Recrring Event 
+
+CREATE TABLE IF NOT EXISTS dailywifipasswords(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    password VARCHAR(8) NOT NULL UNIQUUE,
+    status INT DEFAULT 1
+);
+
+DESC dailywifipasswords;
+
+INSERT INTO dailywifipasswords(password,status)
+VALUES('11111',2),
+('22222',2),
+('33333',2),
+('44444',2),
+('55555',1);
+
+SELECT * FROM dailywifipasswords;
+
+SHOW EVENTS;
+
+CREATE EVENT dailywifipasswords_ev
+ON SCHEDULE EVERY 1 DAY 
+STARTS '2023-7-23 8:19:20'
+DO
+UPDATE dailywifipasswords SET status=2
+WHERE status=1;
+
+SELECT * FROM dailywifipasswords;
+
+DROP EVENT IF EXISTS dailywifipasswords_ev;
+
+
+SHOW EVENTS;
+SELECT * FROM dailywifipasswords;
+
+INSERT INTO dailywifipasswords (password,status)
+VALUES('66666',1);
+
+SHOW EVENTS;
+SELECT * FROM dailywifipasswords;
+
+
+
+CREATE EVENT dailywifipasswords_ev
+ON SCHEDULE EVERY 1 DAY 
+STARTS '2023-7-23 8:37:20'
+ENDS '2023-7-25 10:34:50'
+DO
+UPDATE dailywifipasswords SET status=2
+WHERE status=1;
+
+SHOW EVENTS;
+SELECT * FROM dailywifipasswords;
+
+DROP EVENT IF EXISTS dailywifipasswords_ev;
+
+---------------------------------------------
+
+

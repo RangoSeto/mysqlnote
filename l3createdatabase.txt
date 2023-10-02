@@ -1,0 +1,25 @@
+=> Show Databases;
+SHOW DATABASES;
+
+=> Create Database
+CREATE DATABASE wdf7053;
+
+= About Database Naming
+
+*CAN CREATE 
+Create Database book_shop;
+Create Database SchoolApp;
+Create Database bookingsystem;
+
+*CAN'T CREATE 
+Create Database My App;
+Create Databasw My$#App;
+
+
+=> delete Database
+DROP DATABASE wdf7053;
+
+=> Choose Database
+USE wdf7053;
+
+--------------------------------------------------
